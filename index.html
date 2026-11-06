@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumpiacraft — Lumpia Recipe Scaler</title>
+    <meta name="version" content="1.0.0">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'%3E%3Crect width='200' height='50' fill='%230038A8'/%3E%3Crect y='50' width='200' height='50' fill='%23CE1126'/%3E%3Cpolygon points='0,0 0,100 100,50' fill='%23FFFFFF'/%3E%3Cg fill='%23FCD116'%3E%3Ccircle cx='34' cy='50' r='7'/%3E%3Cpolygon points='0,-5 1.18,-1.62 4.76,-1.55 1.9,0.62 2.94,4.05 0,2 -2.94,4.05 -1.9,0.62 -4.76,-1.55 -1.18,-1.62' transform='translate(12,14)'/%3E%3Cpolygon points='0,-5 1.18,-1.62 4.76,-1.55 1.9,0.62 2.94,4.05 0,2 -2.94,4.05 -1.9,0.62 -4.76,-1.55 -1.18,-1.62' transform='translate(12,86)'/%3E%3Cpolygon points='0,-5 1.18,-1.62 4.76,-1.55 1.9,0.62 2.94,4.05 0,2 -2.94,4.05 -1.9,0.62 -4.76,-1.55 -1.18,-1.62' transform='translate(86,50)'/%3E%3C/g%3E%3C/svg%3E">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Light mode is the default; a stored 'dark' choice applies before first paint.
+        try { if (localStorage.getItem('lumpiacraft_theme') === 'dark') document.documentElement.classList.add('dark'); } catch (e) {}
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        amber: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom range slider styling */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #d97706;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+        /* Dark mode (light is the default; toggled in the header, remembered per device) */
+        html.dark { color-scheme: dark; background-color: #0f172a; }
+        html.dark body { background-color: #0f172a; color: #e2e8f0; }
+        html.dark .bg-white { background-color: #1e293b !important; }
+        html.dark .bg-slate-50 { background-color: #1e293b !important; }
+        html.dark .bg-slate-100 { background-color: #334155 !important; }
+        html.dark .bg-slate-200 { background-color: #334155 !important; }
+        html.dark .bg-amber-50 { background-color: rgba(217, 119, 6, 0.12) !important; }
+        html.dark .bg-amber-100 { background-color: rgba(217, 119, 6, 0.25) !important; }
+        html.dark .bg-amber-50\/60 { background-color: rgba(217, 119, 6, 0.12) !important; }
+        html.dark .bg-gradient-to-br { background-image: linear-gradient(to bottom right, #1e293b, #451a03) !important; }
+        html.dark .text-slate-900 { color: #f1f5f9 !important; }
+        html.dark .text-slate-800 { color: #e2e8f0 !important; }
+        html.dark .text-slate-600 { color: #cbd5e1 !important; }
+        html.dark .text-slate-500 { color: #94a3b8 !important; }
+        html.dark .text-slate-400 { color: #64748b !important; }
+        html.dark .text-amber-900 { color: #fde68a !important; }
+        html.dark .text-amber-800 { color: #fcd34d !important; }
+        html.dark .text-amber-800\/70 { color: rgba(252, 211, 77, 0.7) !important; }
+        html.dark .text-amber-700 { color: #fbbf24 !important; }
+        html.dark .text-amber-950\/80 { color: #fde68a !important; }
+        html.dark .text-emerald-600 { color: #34d399 !important; }
+        html.dark .border-slate-200, html.dark .border-slate-200\/80, html.dark .border-slate-100 { border-color: #334155 !important; }
+        html.dark .border-amber-100, html.dark .border-amber-200\/70 { border-color: rgba(217, 119, 6, 0.35) !important; }
+        html.dark input[type=number] { color: #e2e8f0 !important; }
+    </style>
+</head>
+<body class="h-full text-slate-800 flex flex-col antialiased selection:bg-amber-100 selection:text-amber-800">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-amber-700 via-amber-600 to-amber-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 sm:px-6 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-amber-500/30 rounded-xl backdrop-blur-sm border border-white/20">
+                    <i data-lucide="utensils-crossed" class="w-6 h-6 text-amber-100"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Lumpiacraft</h1>
+                    <p class="text-xs text-amber-100/90 font-medium">Lumpia Recipe Scaler • Precision scaling &amp; practical prep guide</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <svg viewBox="0 0 200 100" class="w-9 h-6 rounded-[3px] ring-1 ring-white/40 shadow-sm shrink-0" role="img" aria-label="Philippine flag" title="A Filipino classic">
+                    <rect width="200" height="50" fill="#0038A8"/>
+                    <rect y="50" width="200" height="50" fill="#CE1126"/>
+                    <polygon points="0,0 0,100 100,50" fill="#FFFFFF"/>
+                    <g fill="#FCD116">
+                        <circle cx="34" cy="50" r="7"/>
+                        <g stroke="#FCD116" stroke-width="2" stroke-linecap="round">
+                            <line x1="34" y1="40" x2="34" y2="35"/>
+                            <line x1="41.07" y1="42.93" x2="44.6" y2="39.4"/>
+                            <line x1="44" y1="50" x2="49" y2="50"/>
+                            <line x1="41.07" y1="57.07" x2="44.6" y2="60.6"/>
+                            <line x1="34" y1="60" x2="34" y2="65"/>
+                            <line x1="26.93" y1="57.07" x2="23.4" y2="60.6"/>
+                            <line x1="24" y1="50" x2="19" y2="50"/>
+                            <line x1="26.93" y1="42.93" x2="23.4" y2="39.4"/>
+                        </g>
+                        <polygon points="0,-5 1.18,-1.62 4.76,-1.55 1.9,0.62 2.94,4.05 0,2 -2.94,4.05 -1.9,0.62 -4.76,-1.55 -1.18,-1.62" transform="translate(12,14)"/>
+                        <polygon points="0,-5 1.18,-1.62 4.76,-1.55 1.9,0.62 2.94,4.05 0,2 -2.94,4.05 -1.9,0.62 -4.76,-1.55 -1.18,-1.62" transform="translate(12,86)"/>
+                        <polygon points="0,-5 1.18,-1.62 4.76,-1.55 1.9,0.62 2.94,4.05 0,2 -2.94,4.05 -1.9,0.62 -4.76,-1.55 -1.18,-1.62" transform="translate(86,50)"/>
+                    </g>
+                </svg>
+                <button id="themeToggle" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 transition backdrop-blur-sm">
+                    <span id="themeToggleIcon"><i data-lucide="moon" class="w-4 h-4"></i></span>
+                    <span id="themeToggleText">Dark</span>
+                </button>
+                <button id="toggleDisplayMode" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 transition backdrop-blur-sm">
+                    <i data-lucide="binary" class="w-4 h-4"></i>
+                    <span id="displayModeText">Fractions: ON</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 sm:px-6 space-y-6">
+
+        <!-- Input & Control Card -->
+        <section class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200/80 space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="scale" class="w-5 h-5 text-amber-600"></i>
+                        Ground Beef Quantity
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Adjust your available meat weight to dynamically re-calculate all ingredients.</p>
+                </div>
+                
+                <!-- Unit Switcher -->
+                <div class="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200 self-start md:self-auto">
+                    <button id="unitLbs" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-amber-700 shadow-sm transition-all">lbs</button>
+                    <button id="unitKg" class="px-3 py-1.5 text-xs font-semibold text-slate-600 rounded-lg hover:text-slate-900 transition-all">kg</button>
+                    <button id="unitGrams" class="px-3 py-1.5 text-xs font-semibold text-slate-600 rounded-lg hover:text-slate-900 transition-all">grams</button>
+                </div>
+            </div>
+
+            <!-- Number Input & Range Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div class="md:col-span-5 flex flex-col space-y-2">
+                    <label for="beefInput" class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Weight (<span id="currentUnitLabel">lbs</span>)
+                    </label>
+                    <div class="relative">
+                        <input type="number" id="beefInput" min="0.1" step="0.1" value="1.3" 
+                            class="w-full text-2xl font-bold text-slate-800 bg-slate-50 border-2 border-slate-200 focus:border-amber-500 focus:bg-white rounded-xl px-4 py-3 outline-none transition pr-16 shadow-inner">
+                        <span id="inputUnitBadge" class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 uppercase">lbs</span>
+                    </div>
+                </div>
+
+                <div class="md:col-span-7 flex flex-col space-y-3">
+                    <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
+                        <span>Quick Slider</span>
+                        <span class="text-amber-700 font-bold" id="sliderValDisplay">1.3 lbs</span>
+                    </div>
+                    <input type="range" id="beefSlider" min="0.25" max="10" step="0.05" value="1.3"
+                        class="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                    
+                    <!-- Quick Presets -->
+                    <div class="flex items-center gap-2 pt-1 flex-wrap">
+                        <span class="text-xs text-slate-400 font-medium">Presets:</span>
+                        <button class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-100 hover:text-amber-800 font-medium border border-slate-200 transition" data-lbs="1">1 lb</button>
+                        <button class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-medium border border-amber-200 transition" data-lbs="1.3">1.3 lbs (Base)</button>
+                        <button class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-100 hover:text-amber-800 font-medium border border-slate-200 transition" data-lbs="2">2 lbs</button>
+                        <button class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-100 hover:text-amber-800 font-medium border border-slate-200 transition" data-lbs="3">3 lbs</button>
+                        <button class="preset-btn text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-100 hover:text-amber-800 font-medium border border-slate-200 transition" data-lbs="5">5 lbs</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipe Key Insights & Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div class="bg-amber-50/60 border border-amber-100 rounded-xl p-3 text-center">
+                    <span class="block text-xs font-semibold text-amber-800/70 uppercase">Scaling Ratio</span>
+                    <span id="scalingMultiplier" class="text-lg font-bold text-amber-900">1.00×</span>
+                </div>
+                <div class="bg-amber-50/60 border border-amber-100 rounded-xl p-3 text-center">
+                    <span class="block text-xs font-semibold text-amber-800/70 uppercase">Est. Yield</span>
+                    <span id="estYield" class="text-lg font-bold text-amber-900">30–40 rolls</span>
+                </div>
+                <div class="bg-amber-50/60 border border-amber-100 rounded-xl p-3 text-center">
+                    <span class="block text-xs font-semibold text-amber-800/70 uppercase">Servings</span>
+                    <span id="estServings" class="text-lg font-bold text-amber-900">4–6 people</span>
+                </div>
+                <div class="bg-amber-50/60 border border-amber-100 rounded-xl p-3 text-center">
+                    <span class="block text-xs font-semibold text-amber-800/70 uppercase">Prep Progress</span>
+                    <span id="prepProgress" class="text-lg font-bold text-amber-900">0 / 12</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Lumpia Filling Ingredients Column -->
+            <section class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col">
+                <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="soup" class="w-5 h-5 text-amber-600"></i>
+                        <h3 class="font-bold text-slate-900">Filling Ingredients</h3>
+                    </div>
+                    <button id="resetPrepBtn" class="text-xs text-slate-500 hover:text-amber-700 font-medium flex items-center gap-1 transition">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                        Uncheck All
+                    </button>
+                </div>
+
+                <div class="p-4 sm:p-5 flex-grow space-y-3" id="fillingList">
+                    <!-- Dynamic filling items inserted here -->
+                </div>
+            </section>
+
+            <!-- Assembly, Wrapping & Kitchen Tips Column -->
+            <section class="lg:col-span-5 space-y-6">
+                <!-- Wrapper & Assembly Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                    <div class="p-4 sm:p-5 bg-slate-50 border-b border-slate-100 flex items-center space-x-2">
+                        <i data-lucide="package" class="w-5 h-5 text-amber-600"></i>
+                        <h3 class="font-bold text-slate-900">Assembly & Wrapping</h3>
+                    </div>
+                    <div class="p-4 sm:p-5 space-y-3" id="assemblyList">
+                        <!-- Dynamic assembly items inserted here -->
+                    </div>
+                </div>
+
+                <!-- Practical Cooking & Measurement Notes -->
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200/70 space-y-3">
+                    <h4 class="font-bold text-amber-900 text-sm flex items-center gap-2">
+                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-600"></i>
+                        Chef's Practical Tips
+                    </h4>
+                    <ul class="text-xs text-amber-950/80 space-y-2 leading-relaxed">
+                        <li class="flex items-start gap-1.5">
+                            <span class="font-bold text-amber-700">•</span>
+                            <span><strong>Garlic & Carrots:</strong> Since head sizes vary, aim for about 2 whole heads of garlic for every ~1.3 lbs meat.</span>
+                        </li>
+                        <li class="flex items-start gap-1.5">
+                            <span class="font-bold text-amber-700">•</span>
+                            <span><strong>Egg Wash:</strong> 1 egg wash usually suffices for up to 2–3 lbs of meat. Add a splash of water if it runs low.</span>
+                        </li>
+                        <li class="flex items-start gap-1.5">
+                            <span class="font-bold text-amber-700">•</span>
+                            <span><strong>Magic Sarap & Seasoning:</strong> 1 pack is approx. 8g (1.5 tsp). Adjust to taste.</span>
+                        </li>
+                        <li class="flex items-start gap-1.5">
+                            <span class="font-bold text-amber-700">•</span>
+                            <span><strong>Cornstarch:</strong> Acts as a binder. If the mixture feels wet, add an extra tablespoon.</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto bg-slate-100 border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>Lumpiacraft <span id="appVersion">v1.0.0</span> • 🇵🇭 A Filipino classic • Digitized from original handwritten recipe</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // App version (shown in the footer)
+        const APP_VERSION = "1.0.0";
+
+        // Recipe Base Definitions (Base = 1.3 lbs Ground Beef)
+        const BASE_BEEF_LBS = 1.3;
+        
+        // Base quantities per 1.3 lbs ground beef
+        const INGREDIENTS = [
+            {
+                id: 'beef',
+                name: 'Ground Beef',
+                category: 'filling',
+                baseVal: 1.3,
+                unit: 'lbs',
+                isMeat: true,
+                getPractical: (val, lbs) => `${lbs.toFixed(2)} lbs ground beef`
+            },
+            {
+                id: 'carrots',
+                name: 'Medium Carrots',
+                category: 'filling',
+                baseVal: 4.5, // 4-5 average
+                unit: 'carrots',
+                getPractical: (val) => {
+                    const low = Math.floor(val);
+                    const high = Math.ceil(val);
+                    if (low === high) return `~${low} medium carrots`;
+                    return `~${low}–${high} medium carrots (finely grated)`;
+                }
+            },
+            {
+                id: 'onion',
+                name: 'Large Onion',
+                category: 'filling',
+                baseVal: 1,
+                unit: 'large onion',
+                getPractical: (val) => {
+                    if (val < 0.6) return `1/2 medium onion (minced)`;
+                    if (val <= 1.2) return `1 large onion (minced)`;
+                    const count = Math.round(val * 2) / 2;
+                    return `~${formatFraction(count)} large onions (minced)`;
+                }
+            },
+            {
+                id: 'garlic',
+                name: 'Garlic',
+                category: 'filling',
+                baseVal: 2,
+                unit: 'heads',
+                getPractical: (val) => {
+                    const rounded = Math.round(val * 2) / 2;
+                    return `~${formatFraction(rounded)} whole heads of garlic (minced)`;
+                }
+            },
+            {
+                id: 'pepper',
+                name: 'Black Pepper',
+                category: 'filling',
+                baseVal: 2,
+                unit: 'tsp',
+                getPractical: (val) => formatSpoons(val, 'tsp')
+            },
+            {
+                id: 'salt',
+                name: 'Salt',
+                category: 'filling',
+                baseVal: 1,
+                unit: 'tsp',
+                getPractical: (val) => formatSpoons(val, 'tsp')
+            },
+            {
+                id: 'cornstarch',
+                name: 'Cornstarch',
+                category: 'filling',
+                baseVal: 0.25, // 1/4 cup
+                unit: 'cups',
+                getPractical: (val) => {
+                    // 1 cup = 16 tbsp
+                    const tbsp = val * 16;
+                    if (tbsp < 4) {
+                        return `${formatFraction(Math.round(tbsp * 2) / 2)} tbsp cornstarch`;
+                    }
+                    return `${formatFraction(Math.round(val * 4) / 4)} cup cornstarch`;
+                }
+            },
+            {
+                id: 'magic_sarap',
+                name: 'Magic Sarap',
+                category: 'filling',
+                baseVal: 0.5,
+                unit: 'pack',
+                getPractical: (val) => {
+                    if (val <= 0.3) return `~1/4 pack Magic Sarap`;
+                    if (val <= 0.6) return `~1/2 pack Magic Sarap`;
+                    if (val <= 0.85) return `~3/4 pack Magic Sarap`;
+                    const packs = Math.round(val * 2) / 2;
+                    return `~${formatFraction(packs)} pack(s) Magic Sarap`;
+                }
+            },
+            {
+                id: 'green_onions',
+                name: 'Green Onions',
+                category: 'filling',
+                baseVal: 1,
+                unit: 'bunch',
+                getPractical: (val) => {
+                    const count = Math.round(val * 2) / 2;
+                    return `~${formatFraction(count)} bunch(es) green onions (chopped)`;
+                }
+            },
+            {
+                id: 'egg_filling',
+                name: 'Egg (for binding filling)',
+                category: 'filling',
+                baseVal: 1,
+                unit: 'egg',
+                getPractical: (val) => {
+                    const count = Math.round(val);
+                    if (count <= 1) return `1 large egg`;
+                    return `${count} large eggs`;
+                }
+            },
+            // Assembly Items
+            {
+                id: 'wrappers',
+                name: 'Lumpia Wrappers',
+                category: 'assembly',
+                baseVal: 35, // ~30-40 wrappers
+                unit: 'wrappers',
+                getPractical: (val) => {
+                    const min = Math.round(val * (30 / 35));
+                    const max = Math.round(val * (40 / 35));
+                    const packs = Math.ceil(val / 30);
+                    return `~${min}–${max} wrappers (${packs} pack${packs > 1 ? 's' : ''})`;
+                }
+            },
+            {
+                id: 'egg_wash',
+                name: 'Egg (for Egg Wash)',
+                category: 'assembly',
+                baseVal: 1,
+                unit: 'egg',
+                getPractical: (val) => {
+                    // Egg wash doesn't strictly scale linearly
+                    if (val <= 2.5) return `1 egg (beaten with 1 tbsp water)`;
+                    return `2 eggs (beaten for sealing)`;
+                }
+            }
+        ];
+
+        // State variables
+        let currentUnit = 'lbs'; // 'lbs', 'kg', 'grams'
+        let currentBeefLbs = 1.3;
+        let showFractions = true;
+        let checkedState = {};
+
+        // DOM Element Cache
+        const beefInput = document.getElementById('beefInput');
+        const beefSlider = document.getElementById('beefSlider');
+        const currentUnitLabel = document.getElementById('currentUnitLabel');
+        const inputUnitBadge = document.getElementById('inputUnitBadge');
+        const sliderValDisplay = document.getElementById('sliderValDisplay');
+        const scalingMultiplier = document.getElementById('scalingMultiplier');
+        const estYield = document.getElementById('estYield');
+        const estServings = document.getElementById('estServings');
+        const prepProgress = document.getElementById('prepProgress');
+        const fillingList = document.getElementById('fillingList');
+        const assemblyList = document.getElementById('assemblyList');
+        const displayModeText = document.getElementById('displayModeText');
+
+        // Helper: Convert unit values to lbs
+        function convertToLbs(val, unit) {
+            if (unit === 'kg') return val * 2.20462;
+            if (unit === 'grams') return val / 453.592;
+            return val;
+        }
+
+        // Helper: Convert lbs to active unit
+        function convertFromLbs(lbs, unit) {
+            if (unit === 'kg') return lbs / 2.20462;
+            if (unit === 'grams') return lbs * 453.592;
+            return lbs;
+        }
+
+        // Helper: Convert decimal to nice fractions
+        function formatFraction(val) {
+            if (!showFractions) return val.toFixed(2).replace(/\.00$/, '');
+            
+            const whole = Math.floor(val);
+            const remainder = val - whole;
+
+            if (remainder < 0.1) return whole === 0 ? '0' : `${whole}`;
+            if (remainder >= 0.1 && remainder < 0.3) return whole === 0 ? '1/4' : `${whole} 1/4`;
+            if (remainder >= 0.3 && remainder < 0.4) return whole === 0 ? '1/3' : `${whole} 1/3`;
+            if (remainder >= 0.4 && remainder < 0.6) return whole === 0 ? '1/2' : `${whole} 1/2`;
+            if (remainder >= 0.6 && remainder < 0.75) return whole === 0 ? '2/3' : `${whole} 2/3`;
+            if (remainder >= 0.75 && remainder < 0.9) return whole === 0 ? '3/4' : `${whole} 3/4`;
+            return `${whole + 1}`;
+        }
+
+        // Helper: Format teaspoons & tablespoons
+        function formatSpoons(tspVal, defaultUnit = 'tsp') {
+            if (tspVal >= 3) {
+                const tbsp = tspVal / 3;
+                return `${formatFraction(Math.round(tbsp * 4) / 4)} tbsp (${tspVal.toFixed(1)} tsp)`;
+            }
+            return `${formatFraction(Math.round(tspVal * 4) / 4)} ${defaultUnit}`;
+        }
+
+        // Render UI
+        function render() {
+            const ratio = currentBeefLbs / BASE_BEEF_LBS;
+            
+            // Update stats
+            scalingMultiplier.textContent = `${ratio.toFixed(2)}×`;
+            const minRolls = Math.round(30 * ratio);
+            const maxRolls = Math.round(40 * ratio);
+            estYield.textContent = `${minRolls}–${maxRolls} rolls`;
+            
+            const minServings = Math.max(1, Math.round(4 * ratio));
+            const maxServings = Math.max(2, Math.round(6 * ratio));
+            estServings.textContent = `${minServings}–${maxServings} people`;
+
+            // Update inputs if needed
+            const unitVal = convertFromLbs(currentBeefLbs, currentUnit);
+            if (document.activeElement !== beefInput) {
+                beefInput.value = currentUnit === 'grams' ? Math.round(unitVal) : parseFloat(unitVal.toFixed(2));
+            }
+            beefSlider.value = Math.min(10, Math.max(0.25, currentBeefLbs));
+            sliderValDisplay.textContent = `${currentBeefLbs.toFixed(2)} lbs (${convertFromLbs(currentBeefLbs, 'kg').toFixed(2)} kg)`;
+
+            // Clear lists
+            fillingList.innerHTML = '';
+            assemblyList.innerHTML = '';
+
+            let totalChecked = 0;
+            const totalItems = INGREDIENTS.length;
+
+            INGREDIENTS.forEach((item) => {
+                const scaledVal = item.baseVal * ratio;
+                const isChecked = !!checkedState[item.id];
+                if (isChecked) totalChecked++;
+
+                const container = item.category === 'filling' ? fillingList : assemblyList;
+
+                const exactDisplay = item.isMeat 
+                    ? `${unitVal.toFixed(currentUnit === 'grams' ? 0 : 2)} ${currentUnit}`
+                    : `${scaledVal.toFixed(2)} ${item.unit}`;
+
+                const itemEl = document.createElement('div');
+                itemEl.className = `p-3.5 rounded-xl border transition-all duration-200 flex items-start gap-3 cursor-pointer ${
+                    isChecked 
+                        ? 'bg-slate-50 border-slate-200 opacity-60' 
+                        : 'bg-white border-slate-200/90 hover:border-amber-300 hover:shadow-sm'
+                }`;
+
+                itemEl.innerHTML = `
+                    <input type="checkbox" id="chk-${item.id}" ${isChecked ? 'checked' : ''} 
+                        class="mt-1 w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500 cursor-pointer">
+                    <div class="flex-grow min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                            <label for="chk-${item.id}" class="text-sm font-bold text-slate-800 cursor-pointer select-none ${isChecked ? 'line-through text-slate-500' : ''}">
+                                ${item.name}
+                            </label>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-md ${isChecked ? 'bg-slate-200 text-slate-600' : 'bg-amber-100 text-amber-800'}">
+                                ${item.getPractical(scaledVal, currentBeefLbs)}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5 select-none">Exact calculation: <span class="font-medium text-slate-500">${exactDisplay}</span></p>
+                    </div>
+                `;
+
+                // Add check handler
+                const chk = itemEl.querySelector('input');
+                const toggleCheck = (e) => {
+                    if (e.target !== chk) chk.checked = !chk.checked;
+                    checkedState[item.id] = chk.checked;
+                    render();
+                };
+
+                itemEl.addEventListener('click', toggleCheck);
+                container.appendChild(itemEl);
+            });
+
+            // Update Progress Counter
+            prepProgress.textContent = `${totalChecked} / ${totalItems}`;
+            if (totalChecked === totalItems) {
+                prepProgress.className = 'text-lg font-bold text-emerald-600';
+            } else {
+                prepProgress.className = 'text-lg font-bold text-amber-900';
+            }
+
+            // Re-init icons
+            lucide.createIcons();
+        }
+
+        // Event Listeners
+        beefInput.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value) || 0;
+            currentBeefLbs = Math.max(0.05, convertToLbs(val, currentUnit));
+            render();
+        });
+
+        beefSlider.addEventListener('input', (e) => {
+            currentBeefLbs = parseFloat(e.target.value);
+            render();
+        });
+
+        // Unit Switches
+        document.getElementById('unitLbs').addEventListener('click', () => switchUnit('lbs'));
+        document.getElementById('unitKg').addEventListener('click', () => switchUnit('kg'));
+        document.getElementById('unitGrams').addEventListener('click', () => switchUnit('grams'));
+
+        function switchUnit(unit) {
+            currentUnit = unit;
+            currentUnitLabel.textContent = unit;
+            inputUnitBadge.textContent = unit;
+
+            ['unitLbs', 'unitKg', 'unitGrams'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (id === `unit${unit.charAt(0).toUpperCase() + unit.slice(1)}`) {
+                    btn.className = 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-amber-700 shadow-sm transition-all';
+                } else {
+                    btn.className = 'px-3 py-1.5 text-xs font-semibold text-slate-600 rounded-lg hover:text-slate-900 transition-all';
+                }
+            });
+            render();
+        }
+
+        // Preset Buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentBeefLbs = parseFloat(btn.dataset.lbs);
+                render();
+            });
+        });
+
+        // Fraction / Decimal Toggle
+        document.getElementById('toggleDisplayMode').addEventListener('click', () => {
+            showFractions = !showFractions;
+            displayModeText.textContent = showFractions ? 'Fractions: ON' : 'Fractions: OFF';
+            render();
+        });
+
+        // Reset Checklist
+        document.getElementById('resetPrepBtn').addEventListener('click', () => {
+            checkedState = {};
+            render();
+        });
+
+        // Dark mode (light is the default; the choice is remembered on this device)
+        const themeToggle = document.getElementById('themeToggle');
+        const themeToggleText = document.getElementById('themeToggleText');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+        function applyTheme(dark) {
+            document.documentElement.classList.toggle('dark', dark);
+            themeToggleText.textContent = dark ? 'Light' : 'Dark';
+            themeToggleIcon.innerHTML = `<i data-lucide="${dark ? 'sun' : 'moon'}" class="w-4 h-4"></i>`;
+            lucide.createIcons();
+            try { localStorage.setItem('lumpiacraft_theme', dark ? 'dark' : 'light'); } catch (e) {}
+        }
+        themeToggle.addEventListener('click', () => {
+            applyTheme(!document.documentElement.classList.contains('dark'));
+        });
+        applyTheme(document.documentElement.classList.contains('dark'));
+
+        // Footer version
+        document.getElementById('appVersion').textContent = 'v' + APP_VERSION;
+
+        // Initial Render
+        lucide.createIcons();
+        render();
+    </script>
+</body>
+</html>
